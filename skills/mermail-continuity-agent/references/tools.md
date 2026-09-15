@@ -16,9 +16,9 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 ## Discovery
 
 - Prefer the mailbox `public_id` as `mailboxId`. Record the mailbox's own address once at wake; every sender comparison in this persona is against that exact string, case-insensitively on the domain part only.
-- Capsule discovery is `search_emails` with `subject` containing `[capsule]`, `sender` equal to the mailbox's own address, newest first, `limit` 5. Filters establish candidates, not authentication — read `sender_authentication` and `scan_status` from the returned metadata before choosing a capsule.
-- "What arrived since" is `search_emails` with ISO `date_start` equal to the chosen capsule's `received_at`, metadata only, default `limit` 20. Report counts beyond the limit; do not page through the whole inbox at wake.
-- `search_emails` free text applies to the fields the live schema indexes. When a recall phrase does not match, say that the search was metadata-bound and offer to follow `prev` one hop rather than reading the whole chain.
+- Capsule discovery is `search_emails` with `folder` = `sent`, `subject` containing `[capsule]`, `sender` equal to the mailbox's own address, newest first, `limit` 5. The folder is the authorship anchor; `scan_status` and `sender_authentication` on Sent messages are null/unknown by nature and are not read as verdicts.
+- "What arrived since" is `search_emails` with `folder` = `inbox` and ISO `date_start` equal to the chosen capsule's `date`, metadata only, default `limit` 20. Report counts beyond the limit; do not page through the whole inbox at wake.
+- `search_emails` free text applies to the fields the live schema indexes, which may exclude body text. Recall therefore reads the newest capsule and follows `prev` one hop; free text is a first attempt only.
 
 ## Reading
 
@@ -31,8 +31,8 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 - Draft content is the string `body.body`; send content is `body.text` (plain text is preferred for capsules), with required `body.from` equal to the mailbox's own address and `to` equal to the same address. `cc` and `bcc` are omitted, never empty arrays with content.
 - `save_draft` is an internal write. `send_email` is an external-effect tool by catalog classification even when the only recipient is the sender; see [security.md](security.md) for the standing-authorization contract that applies only to that exact self-addressed case.
 - Include `source_draft_id` when sending a previewed draft under the live schema so the sent message matches what was shown.
-- A self-addressed send counts against message quota but not against external-recipient limits. Report the returned message identifier as the new chain head.
+- A self-addressed send lands in the mailbox's Sent folder; on the live service it does not produce an inbox copy. The Sent message is the capsule. It counts against message quota but not against external-recipient limits. Report the returned message identifier as the new chain head.
 
 ## Failure handling
 
-Preserve structured errors (`code`, safe `details`, and `Retry-After`). A validation failure calls for correcting the exact invalid field, not broadening authority. Respect access, credit, and rate limits. On an uncertain send, perform one bounded authoritative check — `search_emails` for the capsule subject from the mailbox's own address since the draft time — and stop if still unresolved. Never auto-retry `send_email`; a duplicated capsule breaks the `prev` chain.
+Preserve structured errors (`code`, safe `details`, and `Retry-After`). A validation failure calls for correcting the exact invalid field, not broadening authority. Respect access, credit, and rate limits. On an uncertain send (for example `status: queued`), perform one bounded authoritative check — `search_emails` in `sent` for the capsule subject from the mailbox's own address since the draft time — and stop if still unresolved. Never auto-retry `send_email`; a duplicated capsule breaks the `prev` chain.

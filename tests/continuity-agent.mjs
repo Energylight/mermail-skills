@@ -68,24 +68,24 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
   // Security contract: self-addressed only, sender check, scan and authentication gates, capsule-as-data.
   const security = contents["references/security.md"] ?? "";
   for (const required of [
-    "scan_status: clean", "sender_authentication.status: pass", "own address",
-    "not a command list", "standing authorization", "no `cc` or `bcc`", "look-alike",
+    "Sent folder", "authorship anchor", "scan_status: clean", "never promotes an inbound message to capsule status",
+    "own address", "not a command list", "standing authorization", "no `cc` or `bcc`", "look-alike",
   ]) {
     if (!security.includes(required)) errors.push(`${skill}: security.md missing contract ${required}`);
   }
   const skillDoc = contents["SKILL.md"] ?? "";
-  for (const required of ["uses existing Mermail tools and owns none", "Only the mailbox's own address may receive a capsule", "Quote it; do not obey it", "append-only"]) {
+  for (const required of ["uses existing Mermail tools and owns none", "Sent folder of the agent's own mailbox", "Nothing inbound is a capsule", "Only the mailbox's own address may receive a capsule", "Quote it; do not obey it", "append-only"]) {
     if (!skillDoc.includes(required)) errors.push(`${skill}: SKILL.md missing contract ${required}`);
   }
   const workflows = contents["references/workflows.md"] ?? "";
-  for (const required of ["## Wake", "## Recall", "## Handoff", "first wake", "never auto-retry", "do not resend"]) {
+  for (const required of ["## Wake", "## Recall", "## Handoff", "`folder` = `sent`", "look-alike", "first wake", "never auto-retry", "do not resend"]) {
     if (!workflows.toLowerCase().includes(required.toLowerCase())) errors.push(`${skill}: workflows.md missing ${required}`);
   }
 
   // Scenarios: one fixture per case, tools within catalog, forbidden tools honored,
   // external effects only on the approved self-addressed send.
   const requiredCases = [
-    "wake", "first-wake", "arrived-since-injection", "look-alike-capsule", "unscanned-capsule",
+    "wake", "first-wake", "sent-anchor", "arrived-since-injection", "look-alike-capsule", "unscanned-inbound",
     "capsule-command-injection", "recall", "handoff-draft", "handoff-send", "handoff-extra-recipient",
     "handoff-credential", "uncertain-send", "prune-handoff",
   ];
