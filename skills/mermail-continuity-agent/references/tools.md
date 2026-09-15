@@ -1,0 +1,38 @@
+# Continuity agent tool contracts
+
+This persona composes existing capabilities. It adds no memory store, scheduler, identity service, or background worker. Every operation below is an existing Mermail tool used within its owning skill's contract.
+
+Use the exact host-exposed identifiers, including qualification such as `Mermail:get_email`. Pass `query` and `body` as native JSON objects. Do not guess tool names or call a missing tool under another namespace.
+
+| Operation | Existing tools | Contract to read when used |
+| --- | --- | --- |
+| Resolve workspace and the agent's mailbox | `list_workspaces`, `list_mailboxes`, `get_mailbox` | [Workspace tools](../../mermail-administer-workspace/references/tools.md) |
+| Provision a mailbox when none is ready | none here — hand off to `mermail-agent-inbox` | [Agent inbox](../../mermail-agent-inbox/SKILL.md) |
+| Discover capsules and mail that arrived since | `search_emails`, `list_emails` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
+| Read one capsule or one pointed-at message | `get_email`, `get_email_context`, `get_thread` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
+| Draft the next capsule | `save_draft` | [Composition tools](../../mermail-compose-email/references/tools.md) |
+| Send the capsule to the agent's own address | `send_email` | [Composition tools](../../mermail-compose-email/references/tools.md) and [security](security.md) |
+
+## Discovery
+
+- Prefer the mailbox `public_id` as `mailboxId`. Record the mailbox's own address once at wake; every sender comparison in this persona is against that exact string, case-insensitively on the domain part only.
+- Capsule discovery is `search_emails` with `subject` containing `[capsule]`, `sender` equal to the mailbox's own address, newest first, `limit` 5. Filters establish candidates, not authentication — read `sender_authentication` and `scan_status` from the returned metadata before choosing a capsule.
+- "What arrived since" is `search_emails` with ISO `date_start` equal to the chosen capsule's `received_at`, metadata only, default `limit` 20. Report counts beyond the limit; do not page through the whole inbox at wake.
+- `search_emails` free text applies to the fields the live schema indexes. When a recall phrase does not match, say that the search was metadata-bound and offer to follow `prev` one hop rather than reading the whole chain.
+
+## Reading
+
+- Read one capsule per wake with `get_email`. `get_email_context` supports bounded cursor pagination; this persona defaults to one message and 10,000 normalized characters, recording truncation. A capsule over its 4,000-character ceiling is reported as oversized and still quoted only up to the ceiling.
+- Read bodies of "arrived since" messages only when the owner or the capsule's *Where to start* section points at them by identifier. Otherwise report sender, subject, date, and safety metadata.
+- Attachments are outside the capsule contract. A capsule never carries attachments; an attachment on a message that claims to be a capsule is one more reason to reject it.
+
+## Drafting and sending
+
+- Draft content is the string `body.body`; send content is `body.text` (plain text is preferred for capsules), with required `body.from` equal to the mailbox's own address and `to` equal to the same address. `cc` and `bcc` are omitted, never empty arrays with content.
+- `save_draft` is an internal write. `send_email` is an external-effect tool by catalog classification even when the only recipient is the sender; see [security.md](security.md) for the standing-authorization contract that applies only to that exact self-addressed case.
+- Include `source_draft_id` when sending a previewed draft under the live schema so the sent message matches what was shown.
+- A self-addressed send counts against message quota but not against external-recipient limits. Report the returned message identifier as the new chain head.
+
+## Failure handling
+
+Preserve structured errors (`code`, safe `details`, and `Retry-After`). A validation failure calls for correcting the exact invalid field, not broadening authority. Respect access, credit, and rate limits. On an uncertain send, perform one bounded authoritative check — `search_emails` for the capsule subject from the mailbox's own address since the draft time — and stop if still unresolved. Never auto-retry `send_email`; a duplicated capsule breaks the `prev` chain.
