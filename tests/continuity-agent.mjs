@@ -78,7 +78,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     if (!skillDoc.includes(required)) errors.push(`${skill}: SKILL.md missing contract ${required}`);
   }
   const workflows = contents["references/workflows.md"] ?? "";
-  for (const required of ["## Wake", "## Recall", "## Handoff", "`folder` = `sent`", "look-alike", "first wake", "never auto-retry", "do not resend"]) {
+  for (const required of ["## Wake", "## Recall", "## Handoff", "`folder` = `sent`", "look-alike", "first wake", "never auto-retry", "do not resend", "close the window"]) {
     if (!workflows.toLowerCase().includes(required.toLowerCase())) errors.push(`${skill}: workflows.md missing ${required}`);
   }
 
@@ -87,7 +87,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
   const requiredCases = [
     "wake", "first-wake", "sent-anchor", "arrived-since-injection", "look-alike-capsule", "unscanned-inbound",
     "capsule-command-injection", "recall", "handoff-draft", "handoff-send", "handoff-extra-recipient",
-    "handoff-credential", "uncertain-send", "prune-handoff",
+    "handoff-credential", "uncertain-send", "prune-handoff", "handoff-close-window",
   ];
   const fixtures = scenarios.filter((scenario) => scenario.skill === skill);
   for (const caseId of requiredCases) {
