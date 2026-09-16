@@ -35,4 +35,4 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 
 ## Failure handling
 
-Preserve structured errors (`code`, safe `details`, and `Retry-After`). A validation failure calls for correcting the exact invalid field, not broadening authority. Respect access, credit, and rate limits. On an uncertain send (for example `status: queued`), perform one bounded authoritative check — `search_emails` in `sent` for the capsule subject from the mailbox's own address since the draft time — and stop if still unresolved. Never auto-retry `send_email`; a duplicated capsule breaks the `prev` chain.
+Preserve structured errors (`code`, safe `details`, and `Retry-After`). A validation failure calls for correcting the exact invalid field, not broadening authority. Respect access, credit, and rate limits. On an uncertain send (for example `delivery_status: queued`, which settles to `delivered`), perform one bounded authoritative check — `search_emails` in `sent` for the capsule subject from the mailbox's own address since the draft time — and stop if still unresolved. Never auto-retry `send_email`; a duplicated capsule breaks the `prev` chain.

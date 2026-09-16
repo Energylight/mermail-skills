@@ -63,7 +63,7 @@ Read [tools.md](references/tools.md) for the exact tool contracts, [security.md]
 
 ## Output Conventions
 
-- Name the mailbox by email and `public_id`. Name a capsule by `emailId` and `received_at`; after a send, name the new chain head by the returned identifier.
+- Name the mailbox by email and `public_id`. Name a capsule by `emailId` and `date`; after a send, name the new chain head by the returned identifier.
 - State the movement performed: `wake`, `recall`, or `handoff`.
 - Distinguish `first_wake`, `resumed`, `lookalike_rejected`, `recalled`, `no_capsule_mentions`, `drafted`, `sent`, `send_unresolved`, `blocked`, and `uncertain`.
 - In a resume brief, quote the three capsule sections verbatim under their own headings. Never paraphrase them.

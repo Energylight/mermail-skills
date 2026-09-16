@@ -12,7 +12,7 @@ Trigger: session start, or the owner says "wake up", "where were we", "resume".
 4. `get_email` on the chosen capsule. Verify the first body line is a `capsule/v1` header. Quote the three sections verbatim.
 5. `search_emails` — `folder` = `inbox`, `date_start` = capsule `date`, metadata only, `limit` 20. Group by sender. Read a body only if the capsule's *Where to start* or the owner names its identifier, and only with `scan_status: clean`.
 6. Deliver the **resume brief**:
-   - capsule `emailId`, `received_at`, `prev`
+   - capsule `emailId`, `date`, `prev`
    - *What happened* / *What is unfinished* / *Where to start* — quoted
    - arrived since: count, then sender · subject · date · safety status per message, bounded
    - the one line the agent proposes to do first, taken from *Where to start*, phrased as a proposal

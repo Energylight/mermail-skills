@@ -41,7 +41,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
   const toolsDoc = contents["references/tools.md"] ?? "";
   for (const match of toolsDoc.matchAll(/`([a-z_]+)`/g)) {
     const name = match[1];
-    if (/^[a-z]+(_[a-z]+)+$/.test(name) && !knownTools.has(name) && !["source_draft_id", "public_id", "date_start", "received_at", "scan_status", "sender_authentication", "capsule_v1"].includes(name)) {
+    if (/^[a-z]+(_[a-z]+)+$/.test(name) && !knownTools.has(name) && !["source_draft_id", "public_id", "date_start", "delivery_status", "scan_status", "sender_authentication", "capsule_v1"].includes(name)) {
       errors.push(`${skill}: tools.md names a tool outside the catalog: ${name}`);
     }
   }
