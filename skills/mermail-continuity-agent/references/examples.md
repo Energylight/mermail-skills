@@ -26,7 +26,7 @@ Output, abridged:
 
 13 turns, $0.47.
 
-## 2. A wake that refused its own capsule — the run that changed the security model
+## 2. A trust boundary refuted by experiment — the run that moved the anchor to Sent
 
 Same mailbox, a fresh session with no memory of run 1. Request: *"Wake and quote the capsule's three sections. Then recall: did an earlier session decide anything about the capsule size ceiling?"*
 
@@ -36,9 +36,9 @@ The persona found the capsule and then skipped it:
 >
 > **first_wake** (in the trusted sense). Recall: no capsule within two hops mentions this — with the caveat that zero capsules were readable this session.
 
-The behaviour was correct for the rules it had been given, and the rules were wrong. The first draft of `security.md` anchored trust on the inbound safety verdicts. Sent messages never carry them: they judge what *arrived*, and a capsule never arrived, it was sent. The validator was green, the tests were green, and the persona could not wake. The anchor was moved to the structural fact that survives: a message in the **Sent folder** of the own mailbox, from and to the own address. Inbound verdicts now govern only what arrived since.
+The behaviour was correct for the rules it had been given, and the rules were wrong. The first draft of `security.md` used a naive trust boundary: it anchored a capsule's trust on the inbound safety verdicts. Sent messages never carry them: they judge what *arrived*, and a capsule never arrived, it was sent. The validator was green, the tests were green, and the persona could not wake. The anchor was moved to the structural fact that survives: a message in the **Sent folder** of the own mailbox, from and to the own address. Inbound verdicts now govern only what arrived since.
 
-The run is kept here because it is the reason the security model looks the way it does. 14 turns, $0.41.
+The run is kept here because it is the reason the security model looks the way it does: the boundary was tested against the live service, refuted, and replaced by a contract the service actually enforces. 14 turns, $0.41.
 
 ## 3. Wake and recall on the corrected anchor
 
