@@ -11,6 +11,8 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 | Discover capsules and mail that arrived since | `search_emails`, `list_emails` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
 | Read one capsule or one pointed-at message | `get_email`, `get_email_context`, `get_thread` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
 | Look up one correspondent's dossier | `search_emails`, `get_email` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) and [dossier format](dossier-format.md) |
+| Name and look at retention candidates | `search_emails`, `get_email` — reads only; the sweep list is text | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
+| Delete what a sweep list marks `delete` | none here — hand off to `mermail-manage-inbox` | [Inbox tools](../../mermail-manage-inbox/references/tools.md), destructive contract |
 | Draft the next capsule or a dossier | `save_draft` | [Composition tools](../../mermail-compose-email/references/tools.md) |
 | Send the capsule or dossier to the agent's own address | `send_email` | [Composition tools](../../mermail-compose-email/references/tools.md) and [security](security.md) |
 

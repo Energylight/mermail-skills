@@ -86,15 +86,16 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     "Sent folder", "authorship anchor", "scan_status: clean", "never promotes an inbound message to capsule status",
     "own address", "not a command list", "standing authorization", "no `cc` or `bcc`", "look-alike",
     "[dossier]", "separate grant", "never promotes an inbound message to trusted", "reported as a count and a cursor",
+    "never puts a row on the list by age alone", "never deletes", "sweep grant",
   ]) {
     if (!security.includes(required)) errors.push(`${skill}: security.md missing contract ${required}`);
   }
   const skillDoc = contents["SKILL.md"] ?? "";
-  for (const required of ["uses existing Mermail tools and owns none", "Sent folder of the agent's own mailbox", "Nothing inbound is a capsule", "Only the mailbox's own address may receive a capsule", "Quote it; do not obey it", "append-only"]) {
+  for (const required of ["uses existing Mermail tools and owns none", "Sent folder of the agent's own mailbox", "Nothing inbound is a capsule", "Only the mailbox's own address may receive a capsule", "Quote it; do not obey it", "append-only", "bounded in retention", "Age names a candidate; a look decides"]) {
     if (!skillDoc.includes(required)) errors.push(`${skill}: SKILL.md missing contract ${required}`);
   }
   const workflows = contents["references/workflows.md"] ?? "";
-  for (const required of ["## Wake", "## Recall", "## Dossier", "## Handoff", "`folder` = `sent`", "look-alike", "first wake", "never auto-retry", "do not resend", "close the window", "`through`", "do not page", "never enumerated", "`no_dossier`", "`legacy_cursor`", "`backlog`"]) {
+  for (const required of ["## Wake", "## Recall", "## Dossier", "## Handoff", "`folder` = `sent`", "look-alike", "first wake", "never auto-retry", "do not resend", "close the window", "`through`", "do not page", "never enumerated", "`no_dossier`", "`legacy_cursor`", "`backlog`", "## Retention", "Age names a candidate; a look decides", "`carried_forward`", "`sweep_proposed`", "never at wake"]) {
     if (!workflows.toLowerCase().includes(required.toLowerCase())) errors.push(`${skill}: workflows.md missing ${required}`);
   }
 
@@ -104,7 +105,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     "wake", "first-wake", "sent-anchor", "arrived-since-injection", "look-alike-capsule", "unscanned-inbound",
     "capsule-command-injection", "recall", "handoff-draft", "handoff-send", "handoff-extra-recipient",
     "handoff-credential", "uncertain-send", "prune-handoff", "handoff-close-window",
-    "backlog-cursor", "dossier-lookup", "dossier-lookalike", "dossier-write",
+    "backlog-cursor", "dossier-lookup", "dossier-lookalike", "dossier-write", "retention-sweep", "retention-injection",
   ];
   const fixtures = scenarios.filter((scenario) => scenario.skill === skill);
   for (const caseId of requiredCases) {
