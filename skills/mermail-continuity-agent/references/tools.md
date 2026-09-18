@@ -10,14 +10,17 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 | Provision a mailbox when none is ready | none here — hand off to `mermail-agent-inbox` | [Agent inbox](../../mermail-agent-inbox/SKILL.md) |
 | Discover capsules and mail that arrived since | `search_emails`, `list_emails` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
 | Read one capsule or one pointed-at message | `get_email`, `get_email_context`, `get_thread` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) |
-| Draft the next capsule | `save_draft` | [Composition tools](../../mermail-compose-email/references/tools.md) |
-| Send the capsule to the agent's own address | `send_email` | [Composition tools](../../mermail-compose-email/references/tools.md) and [security](security.md) |
+| Look up one correspondent's dossier | `search_emails`, `get_email` | [Inbox tools](../../mermail-manage-inbox/references/tools.md) and [dossier format](dossier-format.md) |
+| Draft the next capsule or a dossier | `save_draft` | [Composition tools](../../mermail-compose-email/references/tools.md) |
+| Send the capsule or dossier to the agent's own address | `send_email` | [Composition tools](../../mermail-compose-email/references/tools.md) and [security](security.md) |
 
 ## Discovery
 
 - Prefer the mailbox `public_id` as `mailboxId`. Record the mailbox's own address once at wake; every sender comparison in this persona is against that exact string, case-insensitively on the domain part only.
 - Capsule discovery is `search_emails` with `folder` = `sent`, `subject` containing `[capsule]`, `sender` equal to the mailbox's own address, newest first, `limit` 5. The folder is the authorship anchor; `scan_status` and `sender_authentication` on Sent messages are null/unknown by nature and are not read as verdicts.
-- "What arrived since" is `search_emails` with `folder` = `inbox` and ISO `date_start` equal to the chosen capsule's `date`, metadata only, default `limit` 20. Report counts beyond the limit; do not page through the whole inbox at wake.
+- "What arrived since" is `search_emails` with `folder` = `inbox` and ISO `date_start` equal to the cursor — the capsule header's `through` date, falling back to the capsule's own `date` when the header has no `through` — metadata only, default `limit` 20. Report counts beyond the limit; do not page through the whole inbox at wake.
+- At scale the shape comes from bounded calls, never from paging: the total from the first response; the clean count from one more `search_emails` with the safety filter (`require_scan_status: "clean"`) and the same `date_start`; the two slices from `search_emails` by `sender` (correspondents named in the capsule) or `get_email` by identifier (messages *Where to start* points at). `search_emails` supports `sender`, `subject`, `folder`, `date_start`/`date_end`, safety fields, and page/limit; it does not filter by "thread the agent started", so replies to the agent's own outbound mail are found by `sender` when the capsule names the correspondent, not by a thread query.
+- Dossier discovery is `search_emails` with `folder` = `sent`, `subject` containing `[dossier] <address>`, `sender` equal to the mailbox's own address, newest first, `limit` 1. One lookup per correspondent per action. The `about` field in the `dossier/v1` header, not the subject, is what the persona verifies after `get_email`.
 - `search_emails` free text applies to the fields the live schema indexes, which may exclude body text. Recall therefore reads the newest capsule and follows `prev` one hop; free text is a first attempt only.
 
 ## Reading
@@ -31,7 +34,7 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 - Draft content is the string `body.body`; send content is `body.text` (plain text is preferred for capsules), with required `body.from` equal to the mailbox's own address and `to` equal to the same address. `cc` and `bcc` are omitted, never empty arrays with content.
 - `save_draft` is an internal write. `send_email` is an external-effect tool by catalog classification even when the only recipient is the sender; see [security.md](security.md) for the standing-authorization contract that applies only to that exact self-addressed case.
 - Include `source_draft_id` when sending a previewed draft under the live schema so the sent message matches what was shown.
-- A self-addressed send lands in the mailbox's Sent folder; on the live service it does not produce an inbox copy. The Sent message is the capsule. It counts against message quota but not against external-recipient limits. Report the returned message identifier as the new chain head.
+- A self-addressed send lands in the mailbox's Sent folder; on the live service it does not produce an inbox copy. The Sent message is the capsule — or the dossier. It counts against message quota but not against external-recipient limits. Report the returned message identifier as the new chain head (of the session chain, or of that address's dossier chain).
 
 ## Failure handling
 

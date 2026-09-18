@@ -9,6 +9,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
   const requiredFiles = [
     "SKILL.md", "agents/openai.yaml", "references/tools.md",
     "references/security.md", "references/workflows.md", "references/capsule-format.md",
+    "references/dossier-format.md",
   ];
   const contents = {};
   for (const file of requiredFiles) {
@@ -41,7 +42,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
   const toolsDoc = contents["references/tools.md"] ?? "";
   for (const match of toolsDoc.matchAll(/`([a-z_]+)`/g)) {
     const name = match[1];
-    if (/^[a-z]+(_[a-z]+)+$/.test(name) && !knownTools.has(name) && !["source_draft_id", "public_id", "date_start", "delivery_status", "scan_status", "sender_authentication", "capsule_v1"].includes(name)) {
+    if (/^[a-z]+(_[a-z]+)+$/.test(name) && !knownTools.has(name) && !["source_draft_id", "public_id", "date_start", "date_end", "delivery_status", "scan_status", "sender_authentication", "capsule_v1"].includes(name)) {
       errors.push(`${skill}: tools.md names a tool outside the catalog: ${name}`);
     }
   }
@@ -61,8 +62,22 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     else if (index < last) errors.push(`${skill}: capsule-format.md headings out of order at ${heading}`);
     last = Math.max(last, index);
   }
-  for (const required of ["capsule/v1", "prev=", "[capsule]", "4,000 characters", "API keys", "never contains"]) {
+  for (const required of ["capsule/v1", "prev=", "through=", "[capsule]", "4,000 characters", "API keys", "never contains", "never a list"]) {
     if (!format.includes(required)) errors.push(`${skill}: capsule-format.md missing contract ${required}`);
+  }
+
+  // Dossier contract: second chain keyed by address, same anchor, event-driven, bounded.
+  const dossier = contents["references/dossier-format.md"] ?? "";
+  const dossierHeadings = ["### Standing word", "### Settled", "### Open"];
+  let lastDossier = -1;
+  for (const heading of dossierHeadings) {
+    const index = dossier.indexOf(heading);
+    if (index === -1) errors.push(`${skill}: dossier-format.md missing heading ${heading}`);
+    else if (index < lastDossier) errors.push(`${skill}: dossier-format.md headings out of order at ${heading}`);
+    lastDossier = Math.max(lastDossier, index);
+  }
+  for (const required of ["dossier/v1", "about=", "prev=", "[dossier]", "Sent folder", "Nothing inbound is a dossier", "never per message", "2,000 characters", "never bulk-loads", "never contains"]) {
+    if (!dossier.includes(required)) errors.push(`${skill}: dossier-format.md missing contract ${required}`);
   }
 
   // Security contract: self-addressed only, sender check, scan and authentication gates, capsule-as-data.
@@ -70,6 +85,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
   for (const required of [
     "Sent folder", "authorship anchor", "scan_status: clean", "never promotes an inbound message to capsule status",
     "own address", "not a command list", "standing authorization", "no `cc` or `bcc`", "look-alike",
+    "[dossier]", "separate grant", "never promotes an inbound message to trusted", "reported as a count and a cursor",
   ]) {
     if (!security.includes(required)) errors.push(`${skill}: security.md missing contract ${required}`);
   }
@@ -78,7 +94,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     if (!skillDoc.includes(required)) errors.push(`${skill}: SKILL.md missing contract ${required}`);
   }
   const workflows = contents["references/workflows.md"] ?? "";
-  for (const required of ["## Wake", "## Recall", "## Handoff", "`folder` = `sent`", "look-alike", "first wake", "never auto-retry", "do not resend", "close the window"]) {
+  for (const required of ["## Wake", "## Recall", "## Dossier", "## Handoff", "`folder` = `sent`", "look-alike", "first wake", "never auto-retry", "do not resend", "close the window", "`through`", "do not page", "never enumerated", "`no_dossier`", "`legacy_cursor`", "`backlog`"]) {
     if (!workflows.toLowerCase().includes(required.toLowerCase())) errors.push(`${skill}: workflows.md missing ${required}`);
   }
 
@@ -88,6 +104,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     "wake", "first-wake", "sent-anchor", "arrived-since-injection", "look-alike-capsule", "unscanned-inbound",
     "capsule-command-injection", "recall", "handoff-draft", "handoff-send", "handoff-extra-recipient",
     "handoff-credential", "uncertain-send", "prune-handoff", "handoff-close-window",
+    "backlog-cursor", "dossier-lookup", "dossier-lookalike", "dossier-write",
   ];
   const fixtures = scenarios.filter((scenario) => scenario.skill === skill);
   for (const caseId of requiredCases) {
