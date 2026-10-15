@@ -107,6 +107,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     "handoff-credential", "uncertain-send", "prune-handoff", "handoff-close-window",
     "backlog-cursor", "dossier-lookup", "dossier-lookalike", "dossier-write", "retention-sweep", "retention-injection",
     "code-read-only", "code-collision", "code-wrong-mailbox", "code-incomplete", "code-unverified", "code-no-standing-send", "code-secret",
+    "code-moved-sent-null", "code-missing-provenance-null", "code-trusted-outbound-null", "code-trusted-outbound-flagged",
   ];
   const fixtures = scenarios.filter((scenario) => scenario.skill === skill);
   for (const caseId of requiredCases) {
@@ -125,6 +126,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
         !f.identityMatches ? "blocked-identity" :
         !f.coverageComplete ? "blocked-coverage" :
         f.matches !== 1 ? "ambiguous-code" :
+        f.scan === "flagged" || (f.outboundProvenance !== true && f.scan !== "clean") || f.safeContent !== true ? "metadata-only" :
         f.operation === "save" && !f.exactApproval ? "awaiting-exact-approval" :
         !f.outboundProvenance ? "unverified-read-only-brief" : "read-only-brief";
       if (actual !== scenario.expected) errors.push(`${skill}: ${scenario.continuityCase}: expected ${scenario.expected}, got ${actual}`);

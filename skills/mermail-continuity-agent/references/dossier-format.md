@@ -19,7 +19,7 @@ dossier/v1 · agent=<agent name> · about=<correspondent address, lower-case> ·
 [dossier] <correspondent address> · <ISO date> · <one line: what changed>
 ```
 
-The `[dossier]` prefix plus the address is the discovery key: `search_emails` in Sent, `subject` containing `[dossier] <address>`, newest first, `limit` 1. It is a filter, not an authentication signal; only the Sent-folder check decides whether a message is a dossier.
+The `[dossier]` prefix plus the address is the discovery key: `search_emails` in Sent, `subject` containing `[dossier] <address>`, newest first, `limit` 1. It is a filter, not an authentication signal. Apply [security.md](security.md)'s provenance-first body gate before reading or adopting the card. Sent membership alone cannot bypass a missing scan or prove authorship.
 
 ## Three sections, in this order, with these exact headings
 

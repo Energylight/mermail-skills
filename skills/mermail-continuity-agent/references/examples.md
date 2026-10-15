@@ -1,6 +1,6 @@
 # Three real runs
 
-Historical observations, not current authorization instructions: these transcripts used standing self-send permission. Current policy requires a fresh exact preview and approval for every send; Sent membership alone does not authenticate authorship. The recorded runs are not re-executed or re-certified by this consolidation.
+Historical observations, not current authorization instructions: these transcripts used standing self-send permission and a folder-only body-read exception. Current policy requires a fresh exact preview and approval for every send. Sent membership alone does not authenticate authorship or waive scan checks: only positively verified genuine outbound provenance permits a null inbound verdict; otherwise clean sanitized content is required or the read remains metadata-only. The recorded runs are not re-executed or re-certified by this consolidation.
 
 Abridged transcripts from a live mailbox (`aurora@mermail.app`), run with `claude -p` and the Mermail MCP server on 2026-09-15. Tool arguments are shortened; identifiers are real. Costs are the host's own accounting.
 
