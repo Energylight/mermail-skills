@@ -55,7 +55,7 @@ Default ceiling: 4,000 characters. A capsule that needs more is usually carrying
 capsule/v1 · agent=aurora · session=b43c6f14 · prev=7f3a9c12-… · through=2026-09-15T17:40:12.318Z|e_5b0d…
 
 ### What happened
-Chose a self-addressed capsule thread over a per-host file because the host changes between sessions and the mailbox does not. Owner approved standing authorization for self-addressed sends only.
+Chose a self-addressed capsule thread over a per-host file because the host changes between sessions and the mailbox does not. Owner approved this exact self-addressed send after preview.
 
 ### What is unfinished
 Recall by phrase returns metadata only until search supports body text; workaround is to read the newest capsule and follow `prev` one hop.

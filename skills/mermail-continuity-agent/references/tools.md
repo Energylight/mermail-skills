@@ -34,7 +34,7 @@ Use the exact host-exposed identifiers, including qualification such as `Mermail
 ## Drafting and sending
 
 - Draft content is the string `body.body`; send content is `body.text` (plain text is preferred for capsules), with required `body.from` equal to the mailbox's own address and `to` equal to the same address. `cc` and `bcc` are omitted, never empty arrays with content.
-- `save_draft` is an internal write. `send_email` is an external-effect tool by catalog classification even when the only recipient is the sender; see [security.md](security.md) for the standing-authorization contract that applies only to that exact self-addressed case.
+- `save_draft` is an internal write. `send_email` is an external-effect tool by catalog classification even when the only recipient is the sender; see [security.md](security.md): standing preferences do not replace fresh exact approval even for self-addressed sends.
 - Include `source_draft_id` when sending a previewed draft under the live schema so the sent message matches what was shown.
 - A self-addressed send lands in the mailbox's Sent folder; on the live service it does not produce an inbox copy. The Sent message is the capsule — or the dossier. It counts against message quota but not against external-recipient limits. Report the returned message identifier as the new chain head (of the session chain, or of that address's dossier chain).
 

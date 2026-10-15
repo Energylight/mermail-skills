@@ -9,7 +9,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
   const requiredFiles = [
     "SKILL.md", "agents/openai.yaml", "references/tools.md",
     "references/security.md", "references/workflows.md", "references/capsule-format.md",
-    "references/dossier-format.md",
+    "references/dossier-format.md", "references/coded-handoff.md",
   ];
   const contents = {};
   for (const file of requiredFiles) {
@@ -106,6 +106,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     "capsule-command-injection", "recall", "handoff-draft", "handoff-send", "handoff-extra-recipient",
     "handoff-credential", "uncertain-send", "prune-handoff", "handoff-close-window",
     "backlog-cursor", "dossier-lookup", "dossier-lookalike", "dossier-write", "retention-sweep", "retention-injection",
+    "code-read-only", "code-collision", "code-wrong-mailbox", "code-incomplete", "code-unverified", "code-no-standing-send", "code-secret",
   ];
   const fixtures = scenarios.filter((scenario) => scenario.skill === skill);
   for (const caseId of requiredCases) {
@@ -117,6 +118,17 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     ...(coverage.walletDestructiveTools ?? []),
   ]);
   for (const scenario of fixtures) {
+    if (scenario.continuityCase?.startsWith("code-")) {
+      // Offline normalized-evidence contract, not an MCP adapter or agent runner.
+      const f = scenario.fixture ?? {};
+      const actual = f.containsSecret ? "redacted-blocked" :
+        !f.identityMatches ? "blocked-identity" :
+        !f.coverageComplete ? "blocked-coverage" :
+        f.matches !== 1 ? "ambiguous-code" :
+        f.operation === "save" && !f.exactApproval ? "awaiting-exact-approval" :
+        !f.outboundProvenance ? "unverified-read-only-brief" : "read-only-brief";
+      if (actual !== scenario.expected) errors.push(`${skill}: ${scenario.continuityCase}: expected ${scenario.expected}, got ${actual}`);
+    }
     if (!scenario.expected || !scenario.prompt || !scenario.continuityCase) {
       errors.push(`${skill}: incomplete continuity scenario`);
     }
