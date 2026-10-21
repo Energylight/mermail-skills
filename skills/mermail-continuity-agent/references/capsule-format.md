@@ -7,13 +7,14 @@ A capsule is one plain-text email the agent sends to its own address. It is writ
 The first line of the body is machine-readable and human-readable at once:
 
 ```
-capsule/v1 · agent=<agent name> · session=<session identifier or "unknown"> · prev=<emailId of the previous capsule, or "none"> · through=<ISO date>|<emailId of the last inbound message this session processed, or "none">
+capsule/v1 · agent=<agent name> · session=<session identifier or "unknown"> · prev=<emailId of the previous capsule, or "none"> · through=<ISO date>|<emailId of the last contiguous processed inbound, or "none">
 ```
 
 - `agent` — the name the owner uses for this agent, stable across sessions.
 - `session` — whatever identifier the host exposes; `unknown` is acceptable and honest.
 - `prev` — the exact `emailId` of the capsule this one supersedes. `none` only on a first capsule. The chain is walked backwards through `prev`, one hop at a time, never by reading the whole thread.
-- `through` — the **cursor**: the server `date` and `emailId` of the last inbound message the session actually processed (read, answered, or deliberately set aside), in date order. The next wake searches the inbox from this date, not from the capsule's own date. Everything after the cursor is unprocessed by definition and recoverable by one search, so the capsule does not list it. `none` when the session processed no inbound mail; then the next wake searches from the capsule's date. A reader that finds no `through` field at all (a capsule written before this field existed) falls back to the capsule's own `date` and says so.
+- `through` — the **cursor**: a preserved watermark, the server `date` and `emailId` of the last inbound message through which the covered window is completely accounted for (read, answered, or deliberately set aside under the owner's direction). Preserve the previous valid `through` exactly if no new inbound was processed. Advance only over a completely accounted contiguous window; processing a newer selected message never skips an older unprocessed gap or unseen page. Name such touched messages separately while retaining the old cursor. A bounded newest-first page is not proof the whole intervening window was processed. The next wake searches inclusively from the watermark date, not from the capsule's own date; same-timestamp IDs may repeat and are not dropped by ID ordering. A valid timestamp and nonempty exact source ID are required; malformed/future/inconsistent cursors stop for reconciliation.
+- `none` means no known processed watermark, not "nothing remains". A missing legacy field or `none` is `cursor_unknown` (`legacy_cursor` may additionally label a missing old field). Never substitute capsule creation time. Ask the owner for an explicit historical baseline/window, preserve it in *What is unfinished* for the next session, and report earlier coverage unknown. An owner-selected window is not proof of processing outside it and does not fabricate an email ID. Until a real contiguous processed source exists, keep `through=none` and the explicit window; a handoff that processed no inbound must not move that window forward.
 
 ## Subject
 

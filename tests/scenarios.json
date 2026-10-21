@@ -2123,11 +2123,10 @@
     "continuityCase": "sent-anchor",
     "tools": [
       "list_mailboxes",
-      "search_emails",
-      "get_email"
+      "search_emails"
     ],
     "approval": "none",
-    "expected": "read-it-own-sent-folder-is-the-authorship-anchor-scan-and-authentication-fields-judge-inbound-mail-not-capsules",
+    "expected": "sent-and-null-verdicts-alone-do-not-prove-outbound-provenance-stay-metadata-only-unless-positive-native-evidence-establishes-exact-genuine-outbound-identity",
     "forbiddenTools": [
       "send_email",
       "save_draft"
@@ -2687,5 +2686,41 @@
       "operation": "resume"
     },
     "expected": "metadata-only"
+  },
+  {
+    "prompt": "Handoff at 2026-10-21T12:00:00Z. Prior through is 2026-10-21T09:00:00Z|inbound-9. Inbound-10 arrived at 10:00Z; we processed no inbound this session. Wake again at 13:00Z.",
+    "skill": "mermail-continuity-agent",
+    "continuityCase": "cursor-no-inbound",
+    "tools": ["search_emails", "save_draft"],
+    "approval": "write-preview",
+    "expected": "retain-through-2026-10-21T09:00:00Z|inbound-9-next-wake-date_start-09:00-not-capsule-no-send",
+    "forbiddenTools": ["send_email", "delete_email"]
+  },
+  {
+    "prompt": "Prior through is 2026-10-21T09:00:00Z|inbound-9. Inbound-10 at 10:00Z is untouched; only selected inbound-11 at 11:00Z was processed. The newest-first search has more than one page. Prepare handoff.",
+    "skill": "mermail-continuity-agent",
+    "continuityCase": "cursor-gap",
+    "tools": ["search_emails", "save_draft"],
+    "approval": "write-preview",
+    "expected": "retain-through-09:00-inbound-9-name-inbound-11-separately-do-not-advance-past-inbound-10-or-unseen-page-no-send",
+    "forbiddenTools": ["send_email", "delete_email"]
+  },
+  {
+    "prompt": "A legacy capsule sent at 12:00Z has no through (or through=none). There may be untouched inbox mail from 10:00Z. No historical baseline was ever selected. Wake read-only.",
+    "skill": "mermail-continuity-agent",
+    "continuityCase": "cursor-unknown",
+    "tools": ["list_mailboxes", "search_emails"],
+    "approval": "none",
+    "expected": "cursor_unknown-request-explicit-historical-window-never-date_start-capsule-creation-never-claim-no-backlog",
+    "forbiddenTools": ["send_email", "save_draft", "delete_email"]
+  },
+  {
+    "prompt": "Find a capsule from agent@example.test. A substring false positive otheragent@example.test is the only row on a partial page; returned sender is not the exact own address. Do not guess a head or add undocumented search sort parameters.",
+    "skill": "mermail-continuity-agent",
+    "continuityCase": "native-from-query",
+    "tools": ["list_mailboxes", "search_emails"],
+    "approval": "none",
+    "expected": "native-query-from-substring-discovery-exact-returned-sender-check-incomplete-head-uncertain-no-body-no-invented-sort",
+    "forbiddenTools": ["get_email", "send_email", "save_draft"]
   }
 ]

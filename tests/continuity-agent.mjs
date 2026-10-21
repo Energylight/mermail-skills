@@ -42,7 +42,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
   const toolsDoc = contents["references/tools.md"] ?? "";
   for (const match of toolsDoc.matchAll(/`([a-z_]+)`/g)) {
     const name = match[1];
-    if (/^[a-z]+(_[a-z]+)+$/.test(name) && !knownTools.has(name) && !["source_draft_id", "public_id", "date_start", "date_end", "delivery_status", "scan_status", "sender_authentication", "capsule_v1"].includes(name)) {
+    if (/^[a-z]+(_[a-z]+)+$/.test(name) && !knownTools.has(name) && !["source_draft_id", "public_id", "date_start", "date_end", "delivery_status", "scan_status", "sender_authentication", "capsule_v1", "metadata_only", "thread_id", "cursor_unknown"].includes(name)) {
       errors.push(`${skill}: tools.md names a tool outside the catalog: ${name}`);
     }
   }
@@ -99,6 +99,18 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     if (!workflows.toLowerCase().includes(required.toLowerCase())) errors.push(`${skill}: workflows.md missing ${required}`);
   }
 
+  // Declarative source-contract regression checks only: this persona has no
+  // executable cursor engine, MCP adapter or model runner. The timeline cases
+  // below state expected behavior; passing packaging is not behavior proof.
+  for (const text of [skillDoc, workflows, format, toolsDoc]) {
+    if (!text.includes("cursor_unknown")) errors.push(`${skill}: cursor uncertainty must be explicit across affected instructions`);
+    if (/falls? back to (?:the |its )?(?:capsule's own|capsule's|own) `?date/i.test(text)) errors.push(`${skill}: unsafe capsule-time cursor fallback`);
+  }
+  for (const required of ["Preserve the previous valid `through` exactly", "completely accounted contiguous window", "Never substitute capsule creation time", "same-timestamp IDs"]) {
+    if (!format.includes(required)) errors.push(`${skill}: missing cursor preservation contract ${required}`);
+  }
+  if (!toolsDoc.includes("query.from") || !toolsDoc.includes("not `sender`, `recipient`, `thread_id` or sort fields")) errors.push(`${skill}: native search parameter boundary missing`);
+
   // Scenarios: one fixture per case, tools within catalog, forbidden tools honored,
   // external effects only on the approved self-addressed send.
   const requiredCases = [
@@ -108,6 +120,7 @@ export async function validateContinuityAgent(root, scenarios, coverage) {
     "backlog-cursor", "dossier-lookup", "dossier-lookalike", "dossier-write", "retention-sweep", "retention-injection",
     "code-read-only", "code-collision", "code-wrong-mailbox", "code-incomplete", "code-unverified", "code-no-standing-send", "code-secret",
     "code-moved-sent-null", "code-missing-provenance-null", "code-trusted-outbound-null", "code-trusted-outbound-flagged",
+    "cursor-no-inbound", "cursor-gap", "cursor-unknown", "native-from-query",
   ];
   const fixtures = scenarios.filter((scenario) => scenario.skill === skill);
   for (const caseId of requiredCases) {
